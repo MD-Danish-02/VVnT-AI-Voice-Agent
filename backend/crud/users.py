@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.security import hash_password
 from models.user import User
 from schemas.user import UserCreate
 
@@ -20,7 +21,10 @@ async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
 
 
 async def create_user(session: AsyncSession, user_data: UserCreate) -> User:
-    user = User(**user_data.model_dump())
+    user = User(
+        **user_data.model_dump(exclude={"password"}),
+        password_hash=hash_password(user_data.password),
+    )
     session.add(user)
     await session.commit()
     await session.refresh(user)

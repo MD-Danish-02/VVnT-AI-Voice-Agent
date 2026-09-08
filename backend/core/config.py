@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     environment: str = "development"
     debug: bool = True
     database_url: str = "postgresql+asyncpg://vvnt_user:vvnt_password@localhost:5432/vvnt_voice_agent"
+    jwt_secret_key: str = "development-only-change-this-secret"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
     
     class Config:
         env_file = ".env"
