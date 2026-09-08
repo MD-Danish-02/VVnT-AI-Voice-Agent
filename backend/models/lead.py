@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -13,6 +13,7 @@ from core.database import Base
 if TYPE_CHECKING:
     from models.appointment import Appointment
     from models.call import Call
+    from models.user import User
 
 
 class Lead(Base):
@@ -20,6 +21,12 @@ class Lead(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
     )
     name: Mapped[str] = mapped_column(String(255))
     email: Mapped[str | None] = mapped_column(String(320), index=True)
@@ -41,3 +48,4 @@ class Lead(Base):
     appointments: Mapped[list[Appointment]] = relationship(
         back_populates="lead", cascade="all, delete-orphan"
     )
+    owner: Mapped[User | None] = relationship(back_populates="owned_leads")

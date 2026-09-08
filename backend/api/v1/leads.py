@@ -25,7 +25,7 @@ async def create_lead_endpoint(
     session: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> LeadResponse:
-    return await create_lead(session, lead_data)
+    return await create_lead(session, lead_data, owner_id=current_user.id)
 
 
 @router.get("", response_model=list[LeadResponse], status_code=status.HTTP_200_OK)
@@ -35,7 +35,10 @@ async def list_leads_endpoint(
     session: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> list[LeadResponse]:
-    return await list_leads(session, skip=skip, limit=limit)
+    owner_id = None if current_user.role == "admin" else current_user.id
+    return await list_leads(
+        session, skip=skip, limit=limit, owner_id=owner_id
+    )
 
 
 @router.get("/{lead_id}", response_model=LeadResponse, status_code=status.HTTP_200_OK)
@@ -44,7 +47,8 @@ async def get_lead_endpoint(
     session: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> LeadResponse:
-    lead = await get_lead_by_id(session, lead_id)
+    owner_id = None if current_user.role == "admin" else current_user.id
+    lead = await get_lead_by_id(session, lead_id, owner_id=owner_id)
     if lead is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lead not found")
     return lead
@@ -57,7 +61,10 @@ async def update_lead_endpoint(
     session: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> LeadResponse:
-    lead = await update_lead(session, lead_id, lead_data)
+    owner_id = None if current_user.role == "admin" else current_user.id
+    lead = await update_lead(
+        session, lead_id, lead_data, owner_id=owner_id
+    )
     if lead is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lead not found")
     return lead

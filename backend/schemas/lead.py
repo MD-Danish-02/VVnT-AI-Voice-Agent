@@ -31,6 +31,7 @@ class LeadResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    owner_id: Optional[UUID] = None
     name: str
     email: Optional[str] = None
     phone: Optional[str] = None
