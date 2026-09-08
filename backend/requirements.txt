@@ -8,3 +8,4 @@ alembic
 pgvector
 pwdlib[argon2]
 PyJWT
+redis

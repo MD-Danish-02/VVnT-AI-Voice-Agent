@@ -20,10 +20,16 @@ async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-async def create_user(session: AsyncSession, user_data: UserCreate) -> User:
+async def create_user(
+    session: AsyncSession,
+    user_data: UserCreate,
+    role: str = "user",
+) -> User:
     user = User(
-        **user_data.model_dump(exclude={"password"}),
+        name=user_data.name,
+        email=user_data.email,
         password_hash=hash_password(user_data.password),
+        role=role,
     )
     session.add(user)
     await session.commit()

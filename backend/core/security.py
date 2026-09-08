@@ -11,6 +11,11 @@ from core.config import settings
 
 password_hash = PasswordHash.recommended()
 
+# Pre-computed valid Argon2id hash used to mitigate timing-based user enumeration
+DUMMY_PASSWORD_HASH: str = (
+    "$argon2id$v=19$m=65536,t=3,p=4$Wes78IjFjNYiJa2Emu524A$oEjdgYmn0oa4sVWmamxO/mUf9LZ4Umklp5tHwqPvDPc"
+)
+
 
 def hash_password(password: str) -> str:
     return password_hash.hash(password)
@@ -36,4 +41,5 @@ def decode_access_token(token: str) -> dict[str, Any]:
         token,
         settings.jwt_secret_key,
         algorithms=[settings.jwt_algorithm],
+        options={"require": ["sub", "exp"], "verify_exp": True},
     )

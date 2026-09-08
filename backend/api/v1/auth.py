@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps import get_current_user, get_db
 from core.config import settings
-from core.security import create_access_token, verify_password
+from core.security import DUMMY_PASSWORD_HASH, create_access_token, verify_password
 from crud.users import create_user, get_user_by_email
 from models.user import User
 from schemas.user import LoginRequest, TokenResponse, UserCreate, UserResponse
@@ -30,7 +30,7 @@ async def register_user(
             detail="Email is already registered",
         )
 
-    return await create_user(session, user_data)
+    return await create_user(session, user_data, role="user")
 
 
 @router.post("/login", response_model=TokenResponse, status_code=status.HTTP_200_OK)
@@ -39,7 +39,10 @@ async def login_user(
     session: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
     user = await get_user_by_email(session, credentials.email)
-    if user is None or not verify_password(credentials.password, user.password_hash):
+    target_hash = user.password_hash if user is not None else DUMMY_PASSWORD_HASH
+    is_valid = verify_password(credentials.password, target_hash)
+
+    if user is None or not is_valid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
