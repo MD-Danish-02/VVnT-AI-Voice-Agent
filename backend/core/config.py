@@ -7,8 +7,18 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     environment: str = "development"
     debug: bool = True
-    database_url: str = "postgresql+asyncpg://vvnt_user:vvnt_password@localhost:5432/vvnt_voice_agent"
+
+    database_url: str = (
+        "postgresql+asyncpg://vvnt_user:vvnt_password@localhost:5432/vvnt_voice_agent"
+    )
     redis_url: str = "redis://localhost:6379/0"
+
+    # Vapi
+    vapi_api_key: str = ""
+    vapi_assistant_id: str = ""
+    vapi_webhook_secret: str = ""
+
+    # JWT
     jwt_secret_key: str = "development-only-change-this-secret"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
@@ -19,12 +29,17 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_security_settings(self) -> "Settings":
-        if not (self.redis_url.startswith("redis://") or self.redis_url.startswith("rediss://")):
+        if not (
+            self.redis_url.startswith("redis://")
+            or self.redis_url.startswith("rediss://")
+        ):
             raise ValueError(
-                f"Invalid REDIS_URL scheme: '{self.redis_url}'. Must begin with 'redis://' or 'rediss://'."
+                f"Invalid REDIS_URL scheme: '{self.redis_url}'. "
+                "Must begin with 'redis://' or 'rediss://'."
             )
 
         allowed_algorithms = {"HS256", "HS384", "HS512"}
+
         if self.jwt_algorithm not in allowed_algorithms:
             raise ValueError(
                 f"Unsupported or insecure JWT algorithm: '{self.jwt_algorithm}'. "
@@ -32,7 +47,9 @@ class Settings(BaseSettings):
             )
 
         if self.access_token_expire_minutes <= 0:
-            raise ValueError("access_token_expire_minutes must be greater than 0")
+            raise ValueError(
+                "access_token_expire_minutes must be greater than 0"
+            )
 
         insecure_dev_secrets = {
             "development-only-change-this-secret",
@@ -40,7 +57,13 @@ class Settings(BaseSettings):
             "changeme",
             "jwt-secret",
         }
-        is_production = self.environment.strip().lower() in {"production", "prod", "staging"}
+
+        is_production = self.environment.strip().lower() in {
+            "production",
+            "prod",
+            "staging",
+        }
+
         if is_production:
             if (
                 not self.jwt_secret_key
@@ -48,9 +71,11 @@ class Settings(BaseSettings):
                 or len(self.jwt_secret_key) < 32
             ):
                 raise ValueError(
-                    "In production/staging environments, jwt_secret_key must be configured with a secure, "
-                    "non-default secret of at least 32 characters."
+                    "In production/staging environments, jwt_secret_key "
+                    "must be configured with a secure, non-default secret "
+                    "of at least 32 characters."
                 )
+
         return self
 
 
