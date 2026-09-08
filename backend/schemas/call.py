@@ -7,6 +7,16 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 
+class CallCreate(BaseModel):
+    lead_id: UUID
+    status: str = "pending"
+    started_at: Optional[datetime] = None
+    ended_at: Optional[datetime] = None
+    duration: Optional[int] = None
+    transcript: Optional[str] = None
+    summary: Optional[str] = None
+
+
 class CallResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
