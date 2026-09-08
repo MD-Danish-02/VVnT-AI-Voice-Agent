@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 
+from core.config import settings
+
+
 app = FastAPI(
-    title="VVnT AI Voice Agent",
-    version="0.1.0",
+    title=settings.app_name,
+    version=settings.app_version,
 )
 
 
@@ -10,5 +13,7 @@ app = FastAPI(
 def health_check():
     return {
         "status": "ok",
-        "service": "vvnt-ai-voice-agent",
+        "service": settings.app_name,
+        "version": settings.app_version,
+        "environment": settings.environment,
     }
